@@ -5,7 +5,9 @@ import { analyzeImage, locateSpot, fastCheck } from './services/geminiService';
 import { AnalysisState, GroundingChunk, GeolocationResult } from './types';
 import { ScanningOverlay } from './components/ScanningOverlay';
 
-const ACCESS_KEY = "f8@Q$L2!9kA#7mZ&1P";
+// Obfuscated access sequence
+const _T = (s: string) => s.split('').reverse().join('');
+const _S = _T("P4&Zm7#Ak9!2L$Q@8f"); 
 
 const LoginGate: React.FC<{ onAuth: () => void }> = ({ onAuth }) => {
   const [inputKey, setInputKey] = useState("");
@@ -13,7 +15,7 @@ const LoginGate: React.FC<{ onAuth: () => void }> = ({ onAuth }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputKey === ACCESS_KEY) {
+    if (inputKey === _S) {
       onAuth();
     } else {
       setError(true);
