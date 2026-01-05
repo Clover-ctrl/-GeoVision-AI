@@ -19,6 +19,7 @@ export interface GeolocationResult {
   coordinates?: {
     lat: number;
     lng: number;
+    query?: string;
   };
 }
 

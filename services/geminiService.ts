@@ -2,10 +2,8 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { GeolocationResult } from "../types";
 
-const API_KEY = process.env.API_KEY || '';
-
 export const analyzeImage = async (base64Image: string): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-preview',
     contents: {
@@ -38,9 +36,8 @@ export const locateSpot = async (
   base64Image: string,
   userLocation?: { latitude: number; longitude: number }
 ): Promise<GeolocationResult> => {
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
-  // Use Gemini 2.5 Flash for the specific Google Maps grounding capabilities
   const response: GenerateContentResponse = await ai.models.generateContent({
     model: "gemini-2.5-flash",
     contents: {
@@ -55,7 +52,10 @@ export const locateSpot = async (
           text: `Based on this image and the following technical description, pinpoint the exact geographical spot on Google Maps: 
           Description: ${description}
           ${userLocation ? `Hint: The user is currently near ${userLocation.latitude}, ${userLocation.longitude}.` : ''}
-          Provide the name of the place, address, and explain why this is the correct location.`,
+          Provide the name of the place, address, and explain why this is the correct location.
+          
+          CRITICAL: At the very end of your response, provide the approximate coordinates in this exact format:
+          COORDINATES: [LAT: value, LNG: value]`,
         }
       ]
     },
@@ -77,16 +77,30 @@ export const locateSpot = async (
   const text = response.text || "Could not pinpoint location.";
   const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
 
+  // Attempt to parse coordinates from the text
+  let coordinates;
+  const coordMatch = text.match(/COORDINATES: \[LAT: ([\d.-]+), LNG: ([\d.-]+)\]/);
+  if (coordMatch) {
+    coordinates = {
+      lat: parseFloat(coordMatch[1]),
+      lng: parseFloat(coordMatch[2])
+    };
+  }
+
+  // If no coordinates but we have a map chunk, try to extract a query title
+  const query = chunks.find(c => c.maps)?.maps?.title;
+
   return {
     text,
     chunks: chunks as any,
+    coordinates: coordinates ? { ...coordinates, query } : undefined
   };
 };
 
 export const fastCheck = async (message: string): Promise<string> => {
-  const ai = new GoogleGenAI({ apiKey: API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const response = await ai.models.generateContent({
-    model: 'gemini-2.5-flash-lite-latest',
+    model: 'gemini-3-flash-preview',
     contents: message,
   });
   return response.text || "";
