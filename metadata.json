@@ -1,0 +1,8 @@
+{
+  "name": " GeoVision AI",
+  "description": "An advanced image-based geolocation app that identifies the exact spot where a photo was taken using Gemini 3 Pro and Gemini 2.5 Flash with Google Maps grounding.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
